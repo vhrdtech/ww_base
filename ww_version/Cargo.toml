@@ -7,7 +7,7 @@ edition.workspace = true
 
 [dependencies]
 wire_weaver = { path = "../wire_weaver", default-features = false }
-semver = { version = "0.4", default-features = false, optional = true }
+semver = { version = "1", default-features = false, optional = true }
 defmt = { version = "1.0", optional = true }
 
 [features]
