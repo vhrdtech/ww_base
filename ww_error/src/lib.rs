@@ -9,7 +9,7 @@
 //! use shrink_wrap::prelude::*;
 //! use ww_error::CommonError;
 //!
-//! #[derive_shrink_wrap(derive(Debug, PartialEq, Eq, Clone), ww_repr = unib32)]
+//! #[derive_shrink_wrap(borrowed, derive(Debug, PartialEq, Eq, Clone), ww_repr = unib32)]
 //! pub enum I2cError {
 //!     /// The address or a data byte was not acknowledged.
 //!     Nack,

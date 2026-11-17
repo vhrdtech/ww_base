@@ -1,6 +1,6 @@
 // ww_error 0.1.0 traits and types, saved by `ww api save`.
 // Do not edit, bump the crate version and save a new snapshot instead.
-// shrink_wrap sha256: b65332d70806c1e675a7855022e38d6a7a8d3dc18c96c3b94118bd5415517bd4
+// shrink_wrap sha256: ee08e87c03e0a60c2f930c5e86263a0604193f1e1958e5a72968b4076739527f
 (magic: 2837124336, ww_self_version: (major: 0, minor: 3, patch: 0), root: (docs: [
     "Errors every WireWeaver API can return (STD-16).",
     "",
@@ -12,7 +12,7 @@
     "use shrink_wrap::prelude::*;",
     "use ww_error::CommonError;",
     "",
-    "#[derive_shrink_wrap(derive(Debug, PartialEq, Eq, Clone), ww_repr = unib32)]",
+    "#[derive_shrink_wrap(borrowed, derive(Debug, PartialEq, Eq, Clone), ww_repr = unib32)]",
     "pub enum I2cError {",
     "    /// The address or a data byte was not acknowledged.",
     "    Nack,",
