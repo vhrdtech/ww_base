@@ -18,8 +18,9 @@ and version numbers only (`PathKind::GlobalCompact`), 2 bytes and up. See
 - A rename or a move to another crate keeps the id: the new name becomes the key, the old one goes into `aliases`.
 - Ids are never reused: a removed trait stays in the file with `"retired": "<why, when>"`.
 - `assigned_ids.lock` is the append-only record of every id ever assigned; after adding an id, run `just gid-lock`.
-  A test fails when an id changes or vanishes, when a public `#[ww_trait]` in `ww_stdlib` has no id (or isn't in
-  `no_id`), on duplicates and on an id in a reserved range.
+  A test (`tests/registry.rs`) fails when an id changes or vanishes, on duplicates and on an id in a reserved range;
+  WireWeaver's standard library fails its own test when one of its public `#[ww_trait]`s has no id (or isn't in
+  `no_id`).
 
 ## Ranges
 
