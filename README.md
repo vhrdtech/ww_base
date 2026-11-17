@@ -2,6 +2,13 @@
 
 [![CI](https://github.com/vhrdtech/ww_base/actions/workflows/ci.yml/badge.svg)](https://github.com/vhrdtech/ww_base/actions/workflows/ci.yml)
 
+<p align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/vhrdtech/wire_weaver/master/docs/assets/wire_weaver_logo-dark.png">
+  <img src="https://raw.githubusercontent.com/vhrdtech/wire_weaver/master/docs/assets/wire_weaver_logo.png" alt="WireWeaver logo" width="480"/>
+</picture>
+</p>
+
 > Base types and identity of [WireWeaver](https://github.com/vhrdtech/wire_weaver): quantities, numbers, versions,
 > dates, common errors, global ids and checksums, for `no_std` devices and hosts alike.
 
