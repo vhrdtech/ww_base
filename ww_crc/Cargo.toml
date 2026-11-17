@@ -1,9 +1,10 @@
 [package]
 name = "ww_crc"
-version.workspace = true
+version = "0.5.0"
 authors.workspace = true
 description = "The CRCs of WireWeaver's framer, link, block, settings and stream crates, one lookup table each, sized by cargo feature"
 edition.workspace = true
+rust-version.workspace = true
 repository.workspace = true
 license.workspace = true
 
@@ -16,3 +17,6 @@ table-slice16 = []
 
 [dependencies]
 crc.workspace = true
+
+[lints]
+workspace = true

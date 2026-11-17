@@ -1,0 +1,5 @@
+# The compiler every build uses; the firmware targets `just check` builds the no_std crates for.
+[toolchain]
+channel = "1.99.0"
+components = ["clippy", "rustfmt"]
+targets = ["thumbv6m-none-eabi", "thumbv7em-none-eabihf"]

@@ -4,6 +4,7 @@ version = "0.2.0"
 authors.workspace = true
 description = "WireWeaver global type ID registry"
 edition.workspace = true
+rust-version.workspace = true
 license.workspace = true
 repository.workspace = true
 documentation = "https://vhrdtech.github.io/wire_weaver/api/addressing/"
@@ -18,3 +19,6 @@ ww_version.workspace = true
 [build-dependencies]
 convert_case.workspace = true
 serde_json.workspace = true
+
+[lints]
+workspace = true
