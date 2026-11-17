@@ -24,34 +24,6 @@
   variant byte and the payload word of `NumericValueStore` as atomics, copied out column by column; `put` is
   `#[inline(always)]` (a known variant folds to two stores).
 * Wire version `w1.0` of its own (EVO-26), in `Cargo.toml` as `[package.metadata.wire_weaver] wire = "w1.0"`: `#[since]` in this crate names its revisions, and a Rust-only break of the crate no longer touches the wire line of the APIs using it. The snapshot carries it (`wire`, `ext_wire`), so its hash changed.
-
-### ⚠️ Breaking
-
-* `NumericBaseType::INib32` / `NumericValue::INib32` (SW-24) is a wire break: both enums have no catch-all for an
-  unknown variant, so an old reader given the new tag fails instead of falling back. `#[since = "w2.0"]`, a new
-  wire line (`[package.metadata.wire_weaver] wire = "w1.0"` -> `"w2.0"`), crate `0.2.0` -> `0.3.0` (the breaking
-  position pre-1.0). `ww_si` picks this up by rebuilding against the new `ww_numeric`, no `ww_si` version change
-  of its own.
-* `Integer::cmp_pow10`, `checked_scale_pow10`, `exact_scale_pow10` and `to_u32_wrapping_pow10` are removed (STD-102): scaling and comparing across powers of ten, and every other prefix, is `exact_units`' integer kernel's (`Prefix::rescale`, `Prefix::cmp_scaled`, `PrefixRatio`), which `ww_si` calls on the `Integer`'s magnitude. Write `Prefix::from_pow10(a)?.cmp_scaled(x, Prefix::from_pow10(b)?, y)` on magnitudes, or use `ww_si::Quantity::to_in` / `PartialOrd`. `Integer` keeps its arithmetic, `Ord`, `to_i32` / `to_u32` and the conversions to and from number types.
-Wire-incompatible with 0.1.1.
-
-* `NumericValue` variants are behind cargo features, one per number type (`nibble`, `u16`, `u32`, `unib32`, `u64`,
-  `i32`, `f32`, `un`, `in`, `u128`, `i8`, `i16`, `i64`, `i128`, `f64`; `U8` is always there), `all` for every one.
-  `std` enables `all`, so hosts see no change; a `no_std` build has to name the types it uses
-  (`features = ["f32"]`). The value takes 8 bytes of RAM with types up to 32 bits instead of 24 to 32, and unused
-  number types bring no code (1.5 KB less flash in the `mcu_qemu` GPIO example). The wire format is the same for
-  every feature set; a variant that is not enabled is read as `shrink_wrap::Error::EnumVariantDisabled`.
-* `NumericValue` is `#[non_exhaustive]`: a `match` outside this crate needs a `_` arm.
-* `NumericValue::UNib32` holds a `UNib32` instead of a `u32` and is variable-length on the wire, as its name and
-  `NumericBaseType::UNib32` say: `UNib32(5)` was `40 05 00 00 00` (a plain little-endian `u32` after the discriminant),
-  now it is `45`; `300` is `4C D4` instead of `40 2C 01 00 00`. `ww_self` already read and wrote it this way, so values
-  it decoded from such a field were wrong. Construct with `NumericValue::UNib32(UNib32(5))` or `UNib32(5).into()`.
-
-* `NumericBaseType`: `U4` renamed to `Nibble`, variants reordered, `UN` and `IN` added.
-* `NumericValue`: `U4` renamed to `Nibble`, variants reordered.
-
-### 🚀 Features
-
 * `NumericValueStore` writes rows with one variant column by column (SW-64, `SeriesStore::columnar` /
   `write_store`): the tag run and the variant's column straight from the payload array, the same bytes as the item
   walk. Not for `UN` / `IN`.
@@ -73,6 +45,29 @@ Wire-incompatible with 0.1.1.
   `is_float()`.
 * `Owned` variants and optional `serde` support.
 * `NumericValue::ty()`, `NumericAnyTypeOwned::human_name()` and `default()`, `NumericBaseType::name()` (std).
+
+### ⚠️ Breaking
+
+* `NumericBaseType::INib32` / `NumericValue::INib32` (SW-24) is a wire break: both enums have no catch-all for an
+  unknown variant, so an old reader given the new tag fails instead of falling back. `#[since = "w2.0"]`, a new
+  wire line (`[package.metadata.wire_weaver] wire = "w1.0"` -> `"w2.0"`), crate `0.2.0` -> `0.3.0` (the breaking
+  position pre-1.0). `ww_si` picks this up by rebuilding against the new `ww_numeric`, no `ww_si` version change
+  of its own.
+* `Integer::cmp_pow10`, `checked_scale_pow10`, `exact_scale_pow10` and `to_u32_wrapping_pow10` are removed (STD-102): scaling and comparing across powers of ten, and every other prefix, is `exact_units`' integer kernel's (`Prefix::rescale`, `Prefix::cmp_scaled`, `PrefixRatio`), which `ww_si` calls on the `Integer`'s magnitude. Write `Prefix::from_pow10(a)?.cmp_scaled(x, Prefix::from_pow10(b)?, y)` on magnitudes, or use `ww_si::Quantity::to_in` / `PartialOrd`. `Integer` keeps its arithmetic, `Ord`, `to_i32` / `to_u32` and the conversions to and from number types.
+* Wire-incompatible with 0.1.1.
+* `NumericValue` variants are behind cargo features, one per number type (`nibble`, `u16`, `u32`, `unib32`, `u64`,
+  `i32`, `f32`, `un`, `in`, `u128`, `i8`, `i16`, `i64`, `i128`, `f64`; `U8` is always there), `all` for every one.
+  `std` enables `all`, so hosts see no change; a `no_std` build has to name the types it uses
+  (`features = ["f32"]`). The value takes 8 bytes of RAM with types up to 32 bits instead of 24 to 32, and unused
+  number types bring no code (1.5 KB less flash in the `mcu_qemu` GPIO example). The wire format is the same for
+  every feature set; a variant that is not enabled is read as `shrink_wrap::Error::EnumVariantDisabled`.
+* `NumericValue` is `#[non_exhaustive]`: a `match` outside this crate needs a `_` arm.
+* `NumericValue::UNib32` holds a `UNib32` instead of a `u32` and is variable-length on the wire, as its name and
+  `NumericBaseType::UNib32` say: `UNib32(5)` was `40 05 00 00 00` (a plain little-endian `u32` after the discriminant),
+  now it is `45`; `300` is `4C D4` instead of `40 2C 01 00 00`. `ww_self` already read and wrote it this way, so values
+  it decoded from such a field were wrong. Construct with `NumericValue::UNib32(UNib32(5))` or `UNib32(5).into()`.
+* `NumericBaseType`: `U4` renamed to `Nibble`, variants reordered, `UN` and `IN` added.
+* `NumericValue`: `U4` renamed to `Nibble`, variants reordered.
 
 ### 📚 Documentation
 

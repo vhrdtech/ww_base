@@ -3,6 +3,9 @@
 ### 🐛 Fixes
 
 - exact_units at c132f58: `TimePoint::wrapping_add`'s `time_point!` macro named its own inherent `Point::wrapping_add` by its full self type, ambiguous since exact_units' new `Scaled<U, u8>`/`<U, u16>`/`<U, u32>` also have one (no behavior change).
+- `Quantity::to_fixed` with a float on either side gives the exact value or `None`, as exact_units' `Fixed::to` does since NUM-30 (STD-59 parity): 516558.94 mV of an `f32` is no `f32` of µV. An `f32` into an integer storage is rounded once and checked on the integer kernel (`PrefixRatio::cmp_scaled_f32`), no `f64` and no 128-bit code for storages up to 32 bits; into a float storage, and from an `f64`, it goes through `Fixed::from_scaled` (a host's path, `Magnitude` code in a firmware that converts into a float `Fixed`).
+* `to_f32()` scales by one exact power of ten instead of repeated `* 10` / `/ 10`, so `Second::milli(2u8)` is
+  `0.002` rounded once.
 
 ### ⚠️ Breaking
 
@@ -16,43 +19,7 @@
 - `AnyQuantity` names units by reference (STD-107, exact_units UNIT-7, wire change EVO-36): its `SIExpr` leaves are `Def(UnitDef)` (variant 0) and `Ref(MarkerId)` (variant 1), `Mul`, `Div`, `Pow` and `Sqrt` move up one place. The walks take a `UnitTable`: `AnyQuantity::to_si_f64(&table)`, `AnyQuantityOwned::to_si_f64(&table)` and `AnyQuantityOwned::to_fixed::<U, P, T, B, _>(&table)` (was without an argument); pass `&ww_si::units::TABLE` for exact_units' units, `&()` for a value whose units are all `Def`s, or the API model a client has. `to_quantity::<U>()` takes none (it reads through `U`'s definition), `Display` reads through `units::TABLE`.
 - `exact_units` at UNIT-7 piece 1 (STD-106): `Scale` and `DegreeCelsius` are gone (no re-export, no `ww_si::DegreeCelsius` alias), a unit has an exact `Magnitude` and no offset, so `to_si_f64` no longer adds one; °C is the point `origins::Celsius`. An `SIExpr`'s named unit is `SIExpr::Def(UnitDef)` with its identity, so `AnyQuantity` bytes grow by the crate name (19 to 35 bytes for 3300 mV). The run-time side catches up with STD-74.
 * Wire version `w2.0` (was `w1.0`, EVO-26, EVO-27): 0.2.0 moved the units, scales and origins to `exact_units` and changed `Timed`, a wire break from 0.1.0, which stays at `w1.0`. The evolution checker found the two on one line once it checked the wire version. APIs using `ww_si` record it at `w2.0` in their snapshots.
-
-### 🚀 Features
-
-- Re-exports `RunScale`, `Scaled` and (feature `time`) `Ticks` from exact_units (NUM-42, STD-116): a number at an exact scale known only at run time, the unit in the type, as an API property, argument or stream item; the walker reads them as their derived structs.
-- Features `fields` (field strengths, densities, permittivity, resistivity, ..) and `radiometric` (`Irradiance`, `RadiantIntensity`, `Radiance`), both in `quantities` as in exact_units, and the opt-in `nuclear` (`Dalton`, `Barn`, `Curie`, `Rad`, `Rem`, `Roentgen`, named years), so every exact_units unit group can be turned on through `ww_si`.
-- Re-exports `Bam16`, `Bam32`, `PhaseBam16`, `PhaseBam32` (feature `angle`) and `Ppm`, `Q15`, `Q31`, `UQ16_16` (feature `dimensionless`) from exact_units, so an API names them as `ww_si::..` like the other aliases.
-- `TimePoint` (STD-110): what a `Timed`'s time can be, any `Point<O, Fixed<Second, P, T>>` of a linear origin in integer storage; `Full` (the same point in 64 bits), `BITS`, `low`, `wrapping_add`, `steps` (the times of a regularly sampled block, wrapping like the clock). `TimeStep<Tm>` names its step type. `TimeUnwrapper<Tm>` and `TimeOverflow` (feature `time`): the full point back on the host from narrow storage (`new(now)`, `default()`, `anchor`, `restart`, `last`, `unwrap`); `Unwrapper` (dynamic, `Second`) shares its core. Re-exports `Linear`.
-- Re-exports `Finite` (exact_units NUM-20, STD-104).
-- Re-exports `exact_units::codec` (`Coded`, `Codec`, `CodecDef`, `MuLaw`) for APIs with non-linear codes (STD-109).
-- Re-exports `Reference`, `ReferenceDef`, `ReferenceHow`, `TimeScaleDef`, `TimeCounting`, `TimeZero` and `UnitZero` (exact_units PT-4), so a crate declares a reference of its own through `ww_si` (STD-108).
-- Re-exports exact_units UNIT-9's systems: `System`, `SystemDef`, `SystemRef`, `BaseRule`, `BridgeDef`, `BridgeError`, `SetToOne`, `Crossing` and the `systems` module (`Si`, `Natural`, `Gaussian`, their units and quantities), with `std` their owned forms; a `systems` feature (on with `std`) turns on exact_units' `systems`.
-- Re-exports `Exp`, `Bases`, `BaseExp`, `BaseDef`, `DimWire`, `MAX_TRUE_BASES`, `PrefixPolicy`, `base!`, and with `std` `BaseExpOwned`, `BaseDefOwned`, `DimWireOwned`, `UnitNamesOwned` (exact_units UNIT-10, IO-9).
-* `AnyQuantity::display(&table)` and `compact_in(&table, &mut arena)` (no allocation, a named unit needs no arena), `AnyQuantityOwned::display`, `compact` and `resolve` (STD-107): a value sent beside its API carries the API's units as `Ref`s, 22 bytes for 3300 mV instead of 35. Re-exports `UnitTable`, `UnitDef`, `UnitNames`, `MarkerId`, `CompactError` and, with `std`, `UnitDefOwned`, `MarkerIdOwned`.
-* Re-exports `exact_units::MaybeNan` next to `Unbounded` (STD-105).
-* `exact_units` taken at 1819d9f, its integer kernel (NUM-13) with the `u32` fast path for SI prefixes, and by git without a `rev`: `Cargo.lock` pins the commit. Re-exports `Rounding`, `Overflow` and `PrefixRatio`; new `ToIn`, the number types `to_in` gives (STD-102).
-* The no-float guard (TEST-33) is a gate: `just no-float-guard`, part of `just test`, fails when the fixture firmware calling every device operation (`to_in`, `rescaled`, `PartialOrd`, a bounded decode, `to_fixed`, `Timed`, `steps`) links `f64`, 128-bit or slow-path code, or `f32` / VFP code without the `f32` feature, on Cortex-M0 and M4F at `fw-z` and `fw-3`. All 16 builds are clean (STD-102).
-* `exact_units` taken at 8584aad (STD-84): `units::{Minute, Hour, Day, Week}` and `origins::UnixEpoch` with
-  `UnixSecs<T>` / `UnixMillis<T>` / `UnixMicros<T>` / `UnixNanos<T>` (`T` defaults to `u64`), a `Point<UnixEpoch,
-  Secs<T>|..>` for POSIX time, reach `ww_si::..` through the existing `units` / `origins` re-exports. Re-exports
-  `exact_units::{Secs, Minutes, Hours, Days}` next to `Micros`, `Millis`, `Nanos` (feature `time`).
-* `exact_units` taken at d28ec86 (STD-85): `units::{Line, Row, Record, Entry}` (feature `counting`), counted bases
-  beside `Item`, `Sample`, `Frame`, `Packet`, reach `ww_si::..` through the existing `units` re-export. Re-exports
-  `exact_units::Count` (unconditional), `exact_units::{Gibibytes, Kibibytes, Mebibytes}` next to `Bytes` (feature
-  `information`), `exact_units::Hz` next to `Secs`/`Minutes`/`Hours`/`Days` (feature `time`), and
-  `exact_units::{Percent, Permille}` next to `Ppb`/`Duty16` (feature `dimensionless`).
-* `exact_units` taken at b114829 (STD-99, LVL-3): `units::{Neper, Decibel, NeperLoss, DecibelLoss, Loss, Absorbance,
-  OpticalDepth, DampingRatio, QualityFactor}` and the length markers a rate's denominator reads as it prints
-  (`Metres100`, `Kilometre`, `Feet100`, `CentimetreMegahertz`), reach `ww_si::..` through the existing `units`
-  re-export; `logarithmic` now also turns on `exact_units/levels` (feature comment updated), next to the existing
-  `DeciBel`/`DeciBelmW`. No new `ww_si` type: a level never takes a runtime `Prefix` (`Quantity`'s own), so it's
-  written `Fixed<units::Decibel, ..>` as any other compile-time-scaled quantity, not a `Quantity` alias.
-* Wire version `w1.0` of its own (EVO-26), in `Cargo.toml` as `[package.metadata.wire_weaver] wire = "w1.0"`: `#[since]` in this crate names its revisions, and a Rust-only break of the crate no longer touches the wire line of the APIs using it. The snapshot carries it (`wire`, `ext_wire`), so its hash changed.
-
-### ⚠️ Breaking
-
 * `exact_units` taken at db126d6 (NUM-19 nan-free-floats, NUM-22, NUM-23, NUM-24, NUM-28, PT-6, LVL-7): a float `Fixed` (`Millis<f32>`, `Fixed<Volt, Milli, f32>`, ...) is never NaN unless its bound is `MaybeNan`. `Fixed::new`, `From<f32>` and `of` of a float don't compile any more; write `Fixed::try_new(x)` (a `Result`, `Err` for NaN) or the `const fn` `bounded(x)`, or `Fixed<.., f32, MaybeNan>` to hold NaN. `Quantity::to_fixed` into a float storage gives `None` for a NaN. Arithmetic of float `Fixed` values gives a `MaybeNan`, which compares only through `gt_or`/`lt_or`/.. or `not_nan()`. Also from that range: `to_level`, `over` and the log decrement take a `Rounding`; `fixed!`, `db!` and `np!` are exact or name a rounding (`fixed!(0.1, NearestEven)`); `Complex::reflection`, `to_admittance` and `to_impedance` return `Extended` (a short and an open are values) and `power_factor` a `Result<_, Undefined>`; `OffTarget<U>` is `OffTarget<V>` (NUM-23). New and additive: `q!` ranges and tolerances with `is_in` (NUM-22), `Window` and `Fixed::within` with a `Tolerance` (NUM-23), tolerance literals `q!(+- 50 mV)` (NUM-24), known leading digits `q!(9.54... dB)` (NUM-28), ranges of points (PT-6) and of levels (LVL-7). See exact_units' CHANGELOG for each. The bytes on the wire don't change, but a NaN that decoded into a float `Fixed` before is now refused on decode.
-
 * Conversions, comparisons and bounds run on `exact_units`' integer kernel (STD-102): exact for integer storage whatever the prefixes (SI, binary, `Pow10`, `Pow2`, `FullScale`), at the width of the enabled number types, with no `f32`, `f64` or 128-bit code on a device that didn't opt into floats. Each conversion names its policy: `to_in::<T>(prefix, Rounding, Overflow) -> Option<T>` (`T` any primitive integer, `f32` / `f64` with those features) replaces `to_u32_in`, `to_i32_in`, `to_u32_wrapping_in` and `to_i128_in`; `rescaled(prefix, Rounding, Overflow)` and `rescaled_exact(prefix)` replace `with_prefix`. What to write instead: `to_u32_in(p)` / `to_i32_in(p)` / `to_i128_in(p)` of an integer is `to_in::<u32>(p, Rounding::Truncate, Overflow::Checked)` (`i32`, `i128`), of a float `Rounding::NearestAway` (what they did: `+0.5` and a cast); `to_u32_wrapping_in(p)` is `to_in::<u32>(p, Rounding::Truncate, Overflow::Wrap)`; `with_prefix(p)` is `rescaled_exact(p)`. Every result of the old methods on integers is the same. Differences: a float is first scaled to the nearest float of the exact product (`PrefixRatio::apply_f32`, in integers, no `f64`), and `Overflow::Wrap` wraps a float like an integer of its value (`to_u32_wrapping_in` refused one past 2^32); two `F32`s at different prefixes compare by the scaled float, an `F32` against an integer exactly; an `F64` (hosts) compares through `f64` as before. `to_f64_in`, `quantize` and the `F32` / `F64` arms of `rescaled` scale through `PrefixRatio` too (the float nearest the exact product). The internal `ops` module (`i128` and `f64` slow paths through `Magnitude`) is gone. A `Quantity` bound's exponent must be within ±63 (`RangeDec<.., EXP>`), a compile error otherwise; `Limit` holds that power of ten as its `prefix` (resolved at compile time) instead of `exp`, so a bounded decode does no prefix lookup (fw-z, `qemu-si-convert`: 629 → 599 instructions). `to_fixed` to a `Fixed` whose scale has no run-time prefix (`Rational<33, 10>` over 4096) still goes through `Fixed::from_scaled` and `Magnitude`. The bytes on the wire don't change.
 * `exact_units` lives in its own repository, [romixlab/exact_units](https://github.com/romixlab/exact_units), with its history (STD-61), and comes from there by git until it is on crates.io; it still depends on `shrink_wrap` (its `shrink_wrap` feature) by git from this repository, which a workspace building `ww_si` `[patch]`es to its own `shrink_wrap` (`[patch."https://github.com/vhrdtech/wire_weaver"]`, see the root `Cargo.toml`, `mcu/` and `examples_mcu/*`).
 * `Quantity<U>` is `Quantity<U, B = Unbounded>` (STD-59): `B` is one of `exact_units`' bound markers (`Range`, `RangeU64`, `RangeDec`), the range in the unit itself whatever the prefix (`Quantity<units::Volt, RangeDec<0, 33, -1>>` is 0 V ..= 3.3 V), checked by `try_new`, `bounded::<B2>()` and on every read (`SubtypeOutOfRange`); `unbounded()` drops it. New: `QuantityBounds`, `Limit`. Rust source writing `Quantity<U>` and the aliases (`Volt`, ..) stays as is, the plain constructors stay on the unbounded form. The API model carries `B` on every `Quantity` instance, `Unbounded` included (D13): a client that matches `Quantity` by one generic argument stops recognising it (CLT-54 matches two); devices and hosts built before see a different `ww_si` model, the bytes of a value don't change. The fields stay public: writing `prefix` / `value` directly skips the check.
@@ -60,47 +27,6 @@
 * `Scale::Factor(f64)` is removed (re-exported from `exact_units`): a unit's factor is exact, `Scale::Exact(Magnitude)`
   (`Rpm` is `Magnitude::new(1, 30, 0, 0, 1)`). `Scale::Affine` is nibble `2` on the wire now, `Exact` `3`: an
   `AnyQuantity` in °C from a device built before reads wrong (`ww_si` was never published).
-
-### 🚀 Features
-
-* `units::Nibble` (4 bit), `Halfword` (16 bit) and `Doubleword` (64 bit), exact scales of `Bit` next to `Byte` and
-  `Word` (feature `information`, STD-60): not to be confused with `shrink_wrap::Nibble`, the 4-bit storage a `Fixed`
-  may hold its number in.
-
-* Re-exports `exact_units::ProvenanceOwned` (with `std`), next to `Provenance` (STD-72).
-
-* Re-exports `exact_units::Provenance` (STD-72).
-* Feature `customary` (STD-72): `exact_units`' imperial and US customary markers (`units::PoundForce`, `Inch`, `GallonUs`, ...), opt-in only: not part of `quantities` or `std`, so an API without them pays nothing for them. A host client doesn't need it to show them: it takes their definitions from the API model.
-* `Quantity::try_from_fixed` (STD-59): a `Fixed` as a `Quantity`, prefix and number as they are: a named prefix where there is one (`Milli`, `Kibi`), else `Prefix::Pow10` (`Pow10<-4>`), `Pow2` (`Pow2<-15>`) or `FullScale` (`FullScaleMax<One, 16>`), so `to_fixed` gives the same value back; `UnknownScale` for any other scale (a BAM, an ADC step `FullScale<Rational<33, 10>, 12>`). `AnyQuantity::from_fixed` / `to_fixed` hold every `Fixed` exactly, the scale moved into the unit (`3·Bam16Rad·rad`). `from_fixed` / `From<Fixed>` stay for decimal prefixes, infallible. A `Quantity` in a family's scale is shown as the `Fixed` is (`32768·1/65535`, `15·10⁻⁴ s`). Proptest `tests/parity.rs`: round trip, `checked_add` / `checked_sub`, comparison and conversion into another scale and storage give the same result or the same refusal on both sides, for mV `i16`, 10⁻⁴ s `u32`, KiB `u16`, a 16-bit duty, `Pow2` scales, a BAM (through `AnyQuantity`), a 12-bit ADC and mV `f32`.
-* Re-exports `exact_units`' `unit!` and `scale!` (INT-13): `ww_si::unit! { pub struct Rpm = "rpm", [rad 1, s -1],
-* Re-exports `exact_units::origin!` (STD-64), so an API declares its origins as `ww_si::origin! { .. }` and clients know them (INT-13).
-  Exact(1 / 30, pi 1); }`.
-
-* Re-exports `exact_units`' `Point`, `PointDiff`, `Origin`, `Offset` and `origins` (STD-64).
-
-* Re-exports `exact_units`' `Index`, `IndexFrom1` and `Seq` with the `counting` feature (STD-58).
-
-* No 64- or 128-bit code on small targets (STD-43): comparisons (`PartialEq` / `PartialOrd` of `Quantity`, `DeciBel`,
-  `DeciBelmW`), `with_prefix`, the exact arithmetic (`checked_add`, `checked_sub`, `checked_mul_int`, `wrapping_add`,
-  `wrapping_sub`, `steps`), `Display` and `defmt::Format` work on `ww_numeric::Integer` instead of widening every value
-  to `i128`. The same prefix compares the stored numbers; across prefixes the value with the bigger prefix is scaled by
-  powers of ten in `u32` with an overflow check, an overflow means it is the bigger one; signs and `u32` against `i32`
-  go by sign and magnitude. Results are the same and exact. The `f64` fallback is only reached when one value is a
-  float, so a firmware without float types has no `f64` code from it either. Donguru (STM32G0B1, thumbv6m, number types
-  `u16` / `u32` / `i32`, `PartialEq` of settings and observe values), flash `.text`: 286 448 → 280 292 B (−6 156 B) at
-  `opt-level = "z"`, where `scale_i128` (1 720 B), `i128::checked_pow` (1 278 B), `NumericValue::to_i128`, `__muldf3`
-  and `__divdf3` are gone and `ops::compare` with its helpers is 316 B; 405 144 → 401 924 B (−3 220 B) at
-  `opt-level = 3`, `ops::compare` 4 006 → 760 B, none of them calling `__aeabi_lmul` or another 64-bit helper (`llvm-nm` /
-  `llvm-objdump`).
-* `Quantity::to_i32_in(prefix)` and `to_u32_in(prefix)`: the value in units of `prefix` as `i32` / `u32`, exact for
-  integers (truncated toward zero to a bigger prefix), rounded for floats (in `f32` for an `F32`), `None` when it
-  doesn't fit; `u32` arithmetic only. `Quantity::to_u32_wrapping_in(prefix)`: the same modulo 2^32, to compare a
-  timestamp with a wrapping 32-bit device clock.
-* `Quantity`, `Prefix`, `Timed` and the other `series` types derive `shrink_wrap::series::SeriesCells` (API-50,
-  observe cells), so quantities can be properties of an observe cells level.
-
-### ⚠️ Breaking
-
 * Against earlier builds from main (EVO-16): `Dim` on the wire is the 41-bit form with rad, bit, a root flag and
   counted bases (was seven exponents in 28 bits, `sized`), so `SIExpr`, `AnyQuantity` and `ww_adc::ChannelInfo::unit` change bytes;
   devices and hosts built from main before this are rebuilt together. `Dim` has a lifetime (`Dim<'i>`, a constant
@@ -122,10 +48,8 @@
   `exp_x2`, `irrational_x2`). `Scale::Exact` changes bytes with it, so the `SIExpr` of `Degree` and `Turn` and
   `ww_adc::ChannelInfo::unit` with them; devices and hosts built from main before this are rebuilt together.
   `prefix::Rational` takes `u64` parameters (its instances in the API model are `u64` constants).
-
-ww_si 0.2 (STD-38): every quantity is one generic type. The bytes on the wire are the same as in 0.1 (values,
-`Series` and `Series<Timed<..>>`), the API model and Rust API are not: devices and hosts are rebuilt with 0.2 together.
-
+* ww_si 0.2 (STD-38): every quantity is one generic type. The bytes on the wire are the same as in 0.1 (values,
+  `Series` and `Series<Timed<..>>`), the API model and Rust API are not: devices and hosts are rebuilt with 0.2 together.
 * Every quantity is `Quantity<U: Unit> { pub prefix, pub value, _unit: PhantomData<U> }`, and every unit a zero-size
   marker in `ww_si::units` (`units::Volt`). The 0.1 names are aliases (`pub type Volt = Quantity<units::Volt>`), so
   APIs keep writing `Volt`. Struct literals don't compile (`_unit` is private): `Volt { prefix, value }` becomes
@@ -158,6 +82,65 @@ ww_si 0.2 (STD-38): every quantity is one generic type. The bytes on the wire ar
 
 ### 🚀 Features
 
+- Re-exports `RunScale`, `Scaled` and (feature `time`) `Ticks` from exact_units (NUM-42, STD-116): a number at an exact scale known only at run time, the unit in the type, as an API property, argument or stream item; the walker reads them as their derived structs.
+- Features `fields` (field strengths, densities, permittivity, resistivity, ..) and `radiometric` (`Irradiance`, `RadiantIntensity`, `Radiance`), both in `quantities` as in exact_units, and the opt-in `nuclear` (`Dalton`, `Barn`, `Curie`, `Rad`, `Rem`, `Roentgen`, named years), so every exact_units unit group can be turned on through `ww_si`.
+- Re-exports `Bam16`, `Bam32`, `PhaseBam16`, `PhaseBam32` (feature `angle`) and `Ppm`, `Q15`, `Q31`, `UQ16_16` (feature `dimensionless`) from exact_units, so an API names them as `ww_si::..` like the other aliases.
+- `TimePoint` (STD-110): what a `Timed`'s time can be, any `Point<O, Fixed<Second, P, T>>` of a linear origin in integer storage; `Full` (the same point in 64 bits), `BITS`, `low`, `wrapping_add`, `steps` (the times of a regularly sampled block, wrapping like the clock). `TimeStep<Tm>` names its step type. `TimeUnwrapper<Tm>` and `TimeOverflow` (feature `time`): the full point back on the host from narrow storage (`new(now)`, `default()`, `anchor`, `restart`, `last`, `unwrap`); `Unwrapper` (dynamic, `Second`) shares its core. Re-exports `Linear`.
+- Re-exports `Finite` (exact_units NUM-20, STD-104).
+- Re-exports `exact_units::codec` (`Coded`, `Codec`, `CodecDef`, `MuLaw`) for APIs with non-linear codes (STD-109).
+- Re-exports `Reference`, `ReferenceDef`, `ReferenceHow`, `TimeScaleDef`, `TimeCounting`, `TimeZero` and `UnitZero` (exact_units PT-4), so a crate declares a reference of its own through `ww_si` (STD-108).
+- Re-exports exact_units UNIT-9's systems: `System`, `SystemDef`, `SystemRef`, `BaseRule`, `BridgeDef`, `BridgeError`, `SetToOne`, `Crossing` and the `systems` module (`Si`, `Natural`, `Gaussian`, their units and quantities), with `std` their owned forms; a `systems` feature (on with `std`) turns on exact_units' `systems`.
+- Re-exports `Exp`, `Bases`, `BaseExp`, `BaseDef`, `DimWire`, `MAX_TRUE_BASES`, `PrefixPolicy`, `base!`, and with `std` `BaseExpOwned`, `BaseDefOwned`, `DimWireOwned`, `UnitNamesOwned` (exact_units UNIT-10, IO-9).
+* `AnyQuantity::display(&table)` and `compact_in(&table, &mut arena)` (no allocation, a named unit needs no arena), `AnyQuantityOwned::display`, `compact` and `resolve` (STD-107): a value sent beside its API carries the API's units as `Ref`s, 22 bytes for 3300 mV instead of 35. Re-exports `UnitTable`, `UnitDef`, `UnitNames`, `MarkerId`, `CompactError` and, with `std`, `UnitDefOwned`, `MarkerIdOwned`.
+* Re-exports `exact_units::MaybeNan` next to `Unbounded` (STD-105).
+* `exact_units` taken at 1819d9f, its integer kernel (NUM-13) with the `u32` fast path for SI prefixes, and by git without a `rev`: `Cargo.lock` pins the commit. Re-exports `Rounding`, `Overflow` and `PrefixRatio`; new `ToIn`, the number types `to_in` gives (STD-102).
+* The no-float guard (TEST-33) is a gate: `just no-float-guard`, part of `just test`, fails when the fixture firmware calling every device operation (`to_in`, `rescaled`, `PartialOrd`, a bounded decode, `to_fixed`, `Timed`, `steps`) links `f64`, 128-bit or slow-path code, or `f32` / VFP code without the `f32` feature, on Cortex-M0 and M4F at `fw-z` and `fw-3`. All 16 builds are clean (STD-102).
+* `exact_units` taken at 8584aad (STD-84): `units::{Minute, Hour, Day, Week}` and `origins::UnixEpoch` with
+  `UnixSecs<T>` / `UnixMillis<T>` / `UnixMicros<T>` / `UnixNanos<T>` (`T` defaults to `u64`), a `Point<UnixEpoch,
+  Secs<T>|..>` for POSIX time, reach `ww_si::..` through the existing `units` / `origins` re-exports. Re-exports
+  `exact_units::{Secs, Minutes, Hours, Days}` next to `Micros`, `Millis`, `Nanos` (feature `time`).
+* `exact_units` taken at d28ec86 (STD-85): `units::{Line, Row, Record, Entry}` (feature `counting`), counted bases
+  beside `Item`, `Sample`, `Frame`, `Packet`, reach `ww_si::..` through the existing `units` re-export. Re-exports
+  `exact_units::Count` (unconditional), `exact_units::{Gibibytes, Kibibytes, Mebibytes}` next to `Bytes` (feature
+  `information`), `exact_units::Hz` next to `Secs`/`Minutes`/`Hours`/`Days` (feature `time`), and
+  `exact_units::{Percent, Permille}` next to `Ppb`/`Duty16` (feature `dimensionless`).
+* `exact_units` taken at b114829 (STD-99, LVL-3): `units::{Neper, Decibel, NeperLoss, DecibelLoss, Loss, Absorbance,
+  OpticalDepth, DampingRatio, QualityFactor}` and the length markers a rate's denominator reads as it prints
+  (`Metres100`, `Kilometre`, `Feet100`, `CentimetreMegahertz`), reach `ww_si::..` through the existing `units`
+  re-export; `logarithmic` now also turns on `exact_units/levels` (feature comment updated), next to the existing
+  `DeciBel`/`DeciBelmW`. No new `ww_si` type: a level never takes a runtime `Prefix` (`Quantity`'s own), so it's
+  written `Fixed<units::Decibel, ..>` as any other compile-time-scaled quantity, not a `Quantity` alias.
+* Wire version `w1.0` of its own (EVO-26), in `Cargo.toml` as `[package.metadata.wire_weaver] wire = "w1.0"`: `#[since]` in this crate names its revisions, and a Rust-only break of the crate no longer touches the wire line of the APIs using it. The snapshot carries it (`wire`, `ext_wire`), so its hash changed.
+* `units::Nibble` (4 bit), `Halfword` (16 bit) and `Doubleword` (64 bit), exact scales of `Bit` next to `Byte` and
+  `Word` (feature `information`, STD-60): not to be confused with `shrink_wrap::Nibble`, the 4-bit storage a `Fixed`
+  may hold its number in.
+* Re-exports `exact_units::ProvenanceOwned` (with `std`), next to `Provenance` (STD-72).
+* Re-exports `exact_units::Provenance` (STD-72).
+* Feature `customary` (STD-72): `exact_units`' imperial and US customary markers (`units::PoundForce`, `Inch`, `GallonUs`, ...), opt-in only: not part of `quantities` or `std`, so an API without them pays nothing for them. A host client doesn't need it to show them: it takes their definitions from the API model.
+* `Quantity::try_from_fixed` (STD-59): a `Fixed` as a `Quantity`, prefix and number as they are: a named prefix where there is one (`Milli`, `Kibi`), else `Prefix::Pow10` (`Pow10<-4>`), `Pow2` (`Pow2<-15>`) or `FullScale` (`FullScaleMax<One, 16>`), so `to_fixed` gives the same value back; `UnknownScale` for any other scale (a BAM, an ADC step `FullScale<Rational<33, 10>, 12>`). `AnyQuantity::from_fixed` / `to_fixed` hold every `Fixed` exactly, the scale moved into the unit (`3·Bam16Rad·rad`). `from_fixed` / `From<Fixed>` stay for decimal prefixes, infallible. A `Quantity` in a family's scale is shown as the `Fixed` is (`32768·1/65535`, `15·10⁻⁴ s`). Proptest `tests/parity.rs`: round trip, `checked_add` / `checked_sub`, comparison and conversion into another scale and storage give the same result or the same refusal on both sides, for mV `i16`, 10⁻⁴ s `u32`, KiB `u16`, a 16-bit duty, `Pow2` scales, a BAM (through `AnyQuantity`), a 12-bit ADC and mV `f32`.
+* Re-exports `exact_units`' `unit!` and `scale!` (INT-13): `ww_si::unit! { pub struct Rpm = "rpm", [rad 1, s -1],
+* Re-exports `exact_units::origin!` (STD-64), so an API declares its origins as `ww_si::origin! { .. }` and clients know them (INT-13).
+  Exact(1 / 30, pi 1); }`.
+* Re-exports `exact_units`' `Point`, `PointDiff`, `Origin`, `Offset` and `origins` (STD-64).
+* Re-exports `exact_units`' `Index`, `IndexFrom1` and `Seq` with the `counting` feature (STD-58).
+* No 64- or 128-bit code on small targets (STD-43): comparisons (`PartialEq` / `PartialOrd` of `Quantity`, `DeciBel`,
+  `DeciBelmW`), `with_prefix`, the exact arithmetic (`checked_add`, `checked_sub`, `checked_mul_int`, `wrapping_add`,
+  `wrapping_sub`, `steps`), `Display` and `defmt::Format` work on `ww_numeric::Integer` instead of widening every value
+  to `i128`. The same prefix compares the stored numbers; across prefixes the value with the bigger prefix is scaled by
+  powers of ten in `u32` with an overflow check, an overflow means it is the bigger one; signs and `u32` against `i32`
+  go by sign and magnitude. Results are the same and exact. The `f64` fallback is only reached when one value is a
+  float, so a firmware without float types has no `f64` code from it either. Donguru (STM32G0B1, thumbv6m, number types
+  `u16` / `u32` / `i32`, `PartialEq` of settings and observe values), flash `.text`: 286 448 → 280 292 B (−6 156 B) at
+  `opt-level = "z"`, where `scale_i128` (1 720 B), `i128::checked_pow` (1 278 B), `NumericValue::to_i128`, `__muldf3`
+  and `__divdf3` are gone and `ops::compare` with its helpers is 316 B; 405 144 → 401 924 B (−3 220 B) at
+  `opt-level = 3`, `ops::compare` 4 006 → 760 B, none of them calling `__aeabi_lmul` or another 64-bit helper (`llvm-nm` /
+  `llvm-objdump`).
+* `Quantity::to_i32_in(prefix)` and `to_u32_in(prefix)`: the value in units of `prefix` as `i32` / `u32`, exact for
+  integers (truncated toward zero to a bigger prefix), rounded for floats (in `f32` for an `F32`), `None` when it
+  doesn't fit; `u32` arithmetic only. `Quantity::to_u32_wrapping_in(prefix)`: the same modulo 2^32, to compare a
+  timestamp with a wrapping 32-bit device clock.
+* `Quantity`, `Prefix`, `Timed` and the other `series` types derive `shrink_wrap::series::SeriesCells` (API-50,
+  observe cells), so quantities can be properties of an observe cells level.
 * `Unwrapper::default()` (no anchor: the first timestamp is taken as is, the earliest time it can be) and
   `Unwrapper::restart()`, for a host without a full reading of the device's clock; timestamps may change prefix and
   storage from one to the next. `Unwrapper::last()` returns `Option<Second>` (`None` before the
@@ -261,12 +244,6 @@ ww_si 0.2 (STD-38): every quantity is one generic type. The bytes on the wire ar
   (feature `f32`). `Volt * AngularVelocity` and `Volt + Ampere` don't compile.
 * Compound units `units::Per<A, B>` and `units::Times<A, B>`, shown as `N·m/(rad/s)`.
 * `units::by_name("Volt")` and `units::ALL`: the `UnitExpr` of every named unit, for dynamic clients.
-
-### 🐛 Fixes
-
-- `Quantity::to_fixed` with a float on either side gives the exact value or `None`, as exact_units' `Fixed::to` does since NUM-30 (STD-59 parity): 516558.94 mV of an `f32` is no `f32` of µV. An `f32` into an integer storage is rounded once and checked on the integer kernel (`PrefixRatio::cmp_scaled_f32`), no `f64` and no 128-bit code for storages up to 32 bits; into a float storage, and from an `f64`, it goes through `Fixed::from_scaled` (a host's path, `Magnitude` code in a firmware that converts into a float `Fixed`).
-* `to_f32()` scales by one exact power of ten instead of repeated `* 10` / `/ 10`, so `Second::milli(2u8)` is
-  `0.002` rounded once.
 
 ## 0.1.0
 
