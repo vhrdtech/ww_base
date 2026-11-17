@@ -14,3 +14,4 @@ Each crate keeps its own detailed changelog (`<crate>/CHANGELOG.md`); this file 
 ### 🐛 Fixes
 
 - ww_error: the crate doc example builds again (STD-16).
+
