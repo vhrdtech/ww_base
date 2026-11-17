@@ -1,7 +1,7 @@
 // ww_error 0.1.0 traits and types, saved by `ww api save`.
 // Do not edit, bump the crate version and save a new snapshot instead.
-// shrink_wrap sha256: ee08e87c03e0a60c2f930c5e86263a0604193f1e1958e5a72968b4076739527f
-(magic: 2837124336, ww_self_version: (major: 0, minor: 3, patch: 0), root: (docs: [
+// shrink_wrap sha256: f7a146dfff3e8c3686bcc5b6ddc9df3cf040337b2890b688e8d7e44aa3c8be71
+(magic: 2837124336, ww_self_version: (major: 0, minor: 4, patch: 0), root: (docs: [
     "Errors every WireWeaver API can return (STD-16).",
     "",
     "[CommonError] is not part of any API\'s error enum: a handler returns it beside the API\'s own error and the",

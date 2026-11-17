@@ -1,7 +1,7 @@
 // ww_keyed 0.1.0 traits and types, saved by `ww api save`.
 // Do not edit, bump the crate version and save a new snapshot instead.
-// shrink_wrap sha256: 41e6752a9dbaad1c34dbcb8eccf4d6f046ee9598e3f8e76673d10b9a5202dcd4
-(magic: 2837124336, ww_self_version: (major: 0, minor: 3, patch: 0), root: (docs: [
+// shrink_wrap sha256: 80e5e0d8c551a436b0d2e1462c30b6d6b01c487441ae49afb2b3e4f291d79123
+(magic: 2837124336, ww_self_version: (major: 0, minor: 4, patch: 0), root: (docs: [
     "Wire types of keyed resource arrays (API-67).",
     "",
     "`keyed!(flow by FlowKey)` next to an array `flow[]` lets a client address its elements by a key instead of an",

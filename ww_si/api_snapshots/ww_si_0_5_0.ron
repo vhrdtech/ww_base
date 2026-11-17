@@ -1,7 +1,7 @@
 // ww_si 0.5.0 traits and types, saved by `ww api save`.
 // Do not edit, bump the crate version and save a new snapshot instead.
-// shrink_wrap sha256: 507b62a91c055e1c94637acd574b0f86ce6f4b04d5f2a267d1158b623bfea775
-(magic: 2837124336, ww_self_version: (major: 0, minor: 3, patch: 0), root: (docs: [
+// shrink_wrap sha256: 074dad5e37128c211694dca50cab8403573893395b133a6d0ddddcf11dfa226a
+(magic: 2837124336, ww_self_version: (major: 0, minor: 4, patch: 0), root: (docs: [
     "SI quantities for device APIs: a [Prefix] and a [NumericValue] in whatever number type the device picks, with the",
     "unit in the type (`Volt::milli(3300u16)` is a [Quantity] of [units::Volt]), so the API says what a value means and",
     "each device chooses its own resolution and range.",

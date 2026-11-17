@@ -1,7 +1,7 @@
 // ww_version 0.2.0 traits and types, saved by `ww api save`.
 // Do not edit, bump the crate version and save a new snapshot instead.
-// shrink_wrap sha256: 4d054bd05dccc7142dd336575e022f8fc2bcaa374b70345e0688e368570e58a1
-(magic: 2837124336, ww_self_version: (major: 0, minor: 3, patch: 0), root: (docs: [], crate_idx: 0, trait_name: "ww_version", items: [], compact_id: None, meta: None), types: [
+// shrink_wrap sha256: 5727cfe53fab05a2a6b3e1a40c6ffbcbc8ab8e9a95f268b451dbb58c177ff54d
+(magic: 2837124336, ww_self_version: (major: 0, minor: 4, patch: 0), root: (docs: [], crate_idx: 0, trait_name: "ww_version", items: [], compact_id: None, meta: None), types: [
     InLine(ty: Struct((size: UnsizedFinalStructure, crate_idx: 0, docs: [
         "Hash of the [ApiBundle] used to compare if client and server API\'s are identical.",
         "See also [ApiHashPair]",

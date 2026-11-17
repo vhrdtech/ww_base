@@ -1,7 +1,7 @@
 // ww_numeric 0.3.0 traits and types, saved by `ww api save`.
 // Do not edit, bump the crate version and save a new snapshot instead.
-// shrink_wrap sha256: 4c40ced263282569d64efedfa6c0fed4b125f1445b6d6a6ee149b8ba8e702535
-(magic: 2837124336, ww_self_version: (major: 0, minor: 3, patch: 0), root: (docs: [], crate_idx: 0, trait_name: "ww_numeric", items: [], compact_id: None, meta: None), types: [
+// shrink_wrap sha256: 0b3913ac0201c10710c2c1c370f4d4e71a13dd1c5016cc863c81ebc391ce34f0
+(magic: 2837124336, ww_self_version: (major: 0, minor: 4, patch: 0), root: (docs: [], crate_idx: 0, trait_name: "ww_numeric", items: [], compact_id: None, meta: None), types: [
     InLine(ty: Struct((size: Unsized, crate_idx: 0, docs: [
         "Number of bits in IB number. Serialized as 7-bits and shifted by -2 to represent I2-I128.",
         "Note that only I2-I64 is supported now, but it\'s not hard to add numbers up to I128.",

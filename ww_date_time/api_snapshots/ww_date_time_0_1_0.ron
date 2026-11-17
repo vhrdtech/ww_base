@@ -1,7 +1,7 @@
 // ww_date_time 0.1.0 traits and types, saved by `ww api save`.
 // Do not edit, bump the crate version and save a new snapshot instead.
-// shrink_wrap sha256: 8088e81402a00dfb72ecf51201c07409e4124922aa57d9ba97857704f8a3382d
-(magic: 2837124336, ww_self_version: (major: 0, minor: 3, patch: 0), root: (docs: [], crate_idx: 0, trait_name: "ww_date_time", items: [], compact_id: None, meta: None), types: [
+// shrink_wrap sha256: dfb77eef73bbc240058de997ad411beccf795c192a970704c3fcffcc21a6deb0
+(magic: 2837124336, ww_self_version: (major: 0, minor: 4, patch: 0), root: (docs: [], crate_idx: 0, trait_name: "ww_date_time", items: [], compact_id: None, meta: None), types: [
     SkippedFullVersion(crate_idx: 1, type_name: "Fixed", signature: [
         226,
         246,

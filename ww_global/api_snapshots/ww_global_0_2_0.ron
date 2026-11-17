@@ -1,7 +1,7 @@
 // ww_global 0.2.0 traits and types, saved by `ww api save`.
 // Do not edit, bump the crate version and save a new snapshot instead.
-// shrink_wrap sha256: 91581ec3ad6357a3eec19df2c3567c460381f6a03734f39418031d9d1ca0deb7
-(magic: 2837124336, ww_self_version: (major: 0, minor: 3, patch: 0), root: (docs: [
+// shrink_wrap sha256: a263e47451aa56bdbe33a5e00af8133829dd0bda586453c4b88e18b2cfc19c00
+(magic: 2837124336, ww_self_version: (major: 0, minor: 4, patch: 0), root: (docs: [
     "Global id registry: small numbers for commonly used crates and traits, so that a request can name a trait in",
     "a few bits instead of its crate name and version (`PathKind::GlobalCompact`). Ids are assigned by hand in",
     "`wire_weaver_gid.json`, see the README for the ranges and rules.",
