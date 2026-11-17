@@ -1,0 +1,104 @@
+name: CI
+
+# clippy and rustdoc use --all-features to cover feature gated code. Tests can't: with `defmt` enabled, host test
+# binaries fail to link, as there is no defmt global logger. `just api-check` needs WireWeaver's `ww`, which CI
+# doesn't build; `just lint` runs it where `ww` is installed.
+
+on:
+  merge_group:
+  workflow_dispatch:
+  workflow_call:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  fmt:
+    name: rustfmt
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          components: rustfmt
+          cache: false
+      - run: cargo fmt --all --check
+
+  cargo-sort:
+    name: cargo sort
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-sort
+      # --grouped keeps the blank line separated groups in [workspace.dependencies]
+      - run: cargo sort --workspace --grouped --check
+
+  typos:
+    name: typos
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: crate-ci/typos@v1
+
+  clippy:
+    name: clippy
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+        with:
+          components: clippy
+      - run: cargo clippy --workspace --all-targets -- -D warnings
+      - run: cargo clippy --workspace --all-targets --all-features -- -D warnings
+
+  doc:
+    name: rustdoc
+    runs-on: ubuntu-latest
+    env:
+      RUSTDOCFLAGS: -D warnings
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+      - run: cargo doc --workspace --no-deps --all-features
+
+  test:
+    name: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: cargo-nextest
+      - run: cargo nextest run --workspace --all-targets --profile ci
+      # nextest does not run doctests
+      - run: cargo test --workspace --doc
+      # the firmware feature sets of `just test`
+      - run: cargo nextest run -p ww_numeric --no-default-features --features u32,i32,f32 --test store --test integer --profile ci
+      - run: cargo nextest run -p ww_si --no-default-features --features time,electrical,u32,i32,f32 --test store --test narrow --profile ci
+      - run: cargo nextest run -p ww_crc --no-default-features --profile ci
+      - run: cargo nextest run -p ww_crc --no-default-features --features table-256 --profile ci
+      - run: cargo nextest run -p ww_crc --features table-slice16 --profile ci
+
+  check:
+    name: feature sets and no_std builds
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions-rust-lang/setup-rust-toolchain@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: just
+      - run: just check
