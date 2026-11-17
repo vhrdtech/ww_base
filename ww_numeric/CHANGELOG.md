@@ -48,6 +48,7 @@
 
 ### ⚠️ Breaking
 
+- Repository: ww_numeric lives in [vhrdtech/ww_base](https://github.com/vhrdtech/ww_base) with its history; take it by git from there, not from wire_weaver.
 * `NumericBaseType::INib32` / `NumericValue::INib32` (SW-24) is a wire break: both enums have no catch-all for an
   unknown variant, so an old reader given the new tag fails instead of falling back. `#[since = "w2.0"]`, a new
   wire line (`[package.metadata.wire_weaver] wire = "w1.0"` -> `"w2.0"`), crate `0.2.0` -> `0.3.0` (the breaking

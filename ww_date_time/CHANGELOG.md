@@ -2,6 +2,7 @@
 
 ### ⚠️ Breaking
 
+- Repository: ww_date_time lives in [vhrdtech/ww_base](https://github.com/vhrdtech/ww_base) with its history; take it by git from there, not from wire_weaver.
 - Calendar fields are typed and bounded (EVO-58, wire line `w1.0` -> `w2.0`, same bytes): `NaiveDate::month` is `IndexFrom1<Month, U4, Range<1, 12>>`, `day` `IndexFrom1<Day, U5, Range<1, 31>>`, `NaiveTime::secs` `Fixed<Second, One, U17, Range<0, 86_399>>`, `frac` `Option<Fixed<Second, Nano, U31, Range<0, 1_999_999_999>>>` and `OtherTimezone::FixedOffset::secs` `Fixed<Second, One, I18, Range<-86_399, 86_399>>`, from `exact_units` (a new dependency, features `shrink_wrap`, `time`, `counting`). Out of range values are refused when read (`SubtypeOutOfRange`). Read a field with `.get().value()` instead of `.value()`. Types embedding `DateTime` need a new wire line as well.
 
 ### 🐛 Fixes

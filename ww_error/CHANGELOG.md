@@ -2,6 +2,7 @@
 
 ### ⚠️ Breaking
 
+- Repository: ww_error lives in [vhrdtech/ww_base](https://github.com/vhrdtech/ww_base) with its history; take it by git from there, not from wire_weaver.
 - `HasCommon` is gone (STD-16): a common error is no variant of an API's error enum; it travels beside the API's error, see `ww_api::Error` and `docs/api/errors.md#common-errors`.
 * `CommonError::InvalidArgument::arg` is `ww_si::Index<ww_si::units::Argument, u8>` instead of a bare `u8` (AGENTS.md
   "Numbers are typed"): same byte on the wire, so every API embedding `CommonError` through `#[common]` shows the
@@ -18,3 +19,7 @@
   `#[common]` variant attribute of `#[derive_shrink_wrap]` implements. Re-exported as
   `wire_weaver::prelude::CommonError`.
 * Wire version `w1.0` of its own (EVO-26), in `Cargo.toml` as `[package.metadata.wire_weaver] wire = "w1.0"`: `#[since]` in this crate names its revisions, and a Rust-only break of the crate no longer touches the wire line of the APIs using it. The snapshot carries it (`wire`, `ext_wire`), so its hash changed.
+
+### 🐛 Fixes
+
+- The crate doc example builds: its error enum takes the `borrowed` directive.
