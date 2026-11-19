@@ -30,8 +30,8 @@ Ids are `UNib32` on the wire, so small numbers are shorter: `0..=7` take one nib
 | Ids       | For                                                                                               |
 |-----------|---------------------------------------------------------------------------------------------------|
 | 0-7       | `ww_log` (crate) and `ww_log::LogDefmt` only; 2-7 stay free until real use shows a trait is requested globally a lot |
-| 8-63      | the device contract and common IO: firmware and board info, identity, counters, firmware update, clock, indication, GPIO, UART, I2C, SPI, CAN, ADC, PWM |
-| 64-511    | all other reusable traits                                                                         |
+| 8-63      | the device contract and common IO: firmware and board info, identity, firmware update, clock, indication, GPIO, UART, I2C, SPI, CAN, ADC, PWM |
+| 64-511    | all other reusable traits; 144-151 the device contract read rarely, where the payload outweighs the id (last reset, user info, counters, firmware inventory) |
 | 512+      | link and protocol crates                                                                          |
 | 2^30      | `ww_log::LogText`: the first id of 11 nibbles. A text log spends far more on each record than on the id |
 
@@ -44,14 +44,10 @@ Each family takes a block with gaps left for related traits to come.
 |   0 | crate | `ww_log` |
 |   1 | trait | `ww_log::LogDefmt` |
 |   8 | trait | `ww_firmware_info::FirmwareInfo` |
-|   9 | trait | `ww_firmware_info::LastReset` |
 |  10 | trait | `ww_board_info::BoardInfo` |
 |  11 | trait | `ww_uid::Uid` |
-|  12 | trait | `ww_user_info::UserInfo` |
-|  13 | trait | `ww_counters::Counters` |
 |  16 | trait | `ww_dfu::BootControl` |
 |  17 | trait | `ww_dfu::UpdateNode` |
-|  18 | trait | `ww_dfu::Inventory` |
 |  19 | trait | `ww_dfu::Stage` |
 |  20 | trait | `ww_dfu::StageBulk` |
 |  24 | trait | `ww_timebase::Clock` |
@@ -87,6 +83,10 @@ Each family takes a block with gaps left for related traits to come.
 | 129 | trait | `ww_signal_generator::WaveformGenerator` |
 | 130 | trait | `ww_signal_generator::WaveformChannel` |
 | 136 | trait | `ww_pin_diag::PinDiag` |
+| 144 | trait | `ww_firmware_info::LastReset` |
+| 145 | trait | `ww_user_info::UserInfo` |
+| 146 | trait | `ww_counters::Counters` |
+| 147 | trait | `ww_dfu::Inventory` |
 | 512 | crate | `wire_weaver_usb_link` |
 | 513 | crate | `ww_client_server` |
 | 1073741824 | trait | `ww_log::LogText` |

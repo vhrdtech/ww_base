@@ -14,6 +14,7 @@ Each crate keeps its own detailed changelog (`<crate>/CHANGELOG.md`); this file 
 ### 🚀 Features
 
 - ww_global: `ww_log::LogText` takes id 2^30 instead of a short one (API-20).
+- ww_global: `LastReset`, `UserInfo`, `Counters` and `Inventory` move from 1-byte ids to 144-147 (API-20).
 
 ### 🐛 Fixes
 

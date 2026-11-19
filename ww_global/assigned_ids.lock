@@ -3,14 +3,10 @@
 0 crate ww_log
 1 trait ww_log::LogDefmt
 8 trait ww_firmware_info::FirmwareInfo
-9 trait ww_firmware_info::LastReset
 10 trait ww_board_info::BoardInfo
 11 trait ww_uid::Uid
-12 trait ww_user_info::UserInfo
-13 trait ww_counters::Counters
 16 trait ww_dfu::BootControl
 17 trait ww_dfu::UpdateNode
-18 trait ww_dfu::Inventory
 19 trait ww_dfu::Stage
 20 trait ww_dfu::StageBulk
 24 trait ww_timebase::Clock
@@ -46,6 +42,10 @@
 129 trait ww_signal_generator::WaveformGenerator
 130 trait ww_signal_generator::WaveformChannel
 136 trait ww_pin_diag::PinDiag
+144 trait ww_firmware_info::LastReset
+145 trait ww_user_info::UserInfo
+146 trait ww_counters::Counters
+147 trait ww_dfu::Inventory
 512 crate wire_weaver_usb_link
 513 crate ww_client_server
 514 trait global_boot_api::Boot

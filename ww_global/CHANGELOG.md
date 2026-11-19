@@ -13,6 +13,7 @@
 * `trait_hash(crate_id, trait_name)`: the 32-bit FNV-1a hash of a trait's crate and name (SRV-53), a `const fn`. A server without introspection finds the trait a `GlobalFull` path names by it, codegen refuses an API in which two traits hash the same.
 * `WW_CLIENT_SERVER` global id (513).
 * `ww_log::LogText` takes id 2^30, the first of 11 nibbles: text logs don't need a short id (API-20).
+* `LastReset`, `UserInfo`, `Counters` and `ww_dfu::Inventory` take ids 144-147: rare reads whose payload outweighs the id (API-20).
 * Trait ids (API-20): one id per `crate::Trait` for every public trait in `ww_stdlib`, in the same number space as
   the crate ids (0-7 `ww_log` and `ww_log::LogDefmt`, 8-63 device contract and common IO, 64-511 the rest, 512+ link
   and protocol crates). `wire_weaver_gid.json` has a new format: `ids` entries with `crate` or `trait`, `aliases`,
