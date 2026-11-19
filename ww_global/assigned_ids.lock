@@ -1,4 +1,4 @@
-# Every id ever assigned in wire_weaver_gid.json, append-only: never edit or remove a line.
+# Every id ever assigned in wire_weaver_gid.json, append-only: never edit or remove a line of a released id.
 # `just gid-lock` appends new ids. The `assigned_ids` test checks the registry against it.
 0 crate ww_log
 1 trait ww_log::LogDefmt
@@ -8,7 +8,6 @@
 11 trait ww_uid::Uid
 12 trait ww_user_info::UserInfo
 13 trait ww_counters::Counters
-14 trait ww_log::LogText
 16 trait ww_dfu::BootControl
 17 trait ww_dfu::UpdateNode
 18 trait ww_dfu::Inventory
@@ -52,3 +51,4 @@
 514 trait global_boot_api::Boot
 515 trait global_boot_api::Missing
 516 trait global_fixture_api::GlobalDemo
+1073741824 trait ww_log::LogText

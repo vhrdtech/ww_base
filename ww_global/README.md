@@ -25,7 +25,7 @@ and version numbers only (`PathKind::GlobalCompact`), 2 bytes and up. See
 ## Ranges
 
 Ids are `UNib32` on the wire, so small numbers are shorter: `0..=7` take one nibble, `8..=63` one byte, `64..=511`
-1.5 bytes, `512..=4095` 2 bytes.
+1.5 bytes, `512..=4095` 2 bytes; `2^30` and up take 11 nibbles, the most a `UNib32` has.
 
 | Ids       | For                                                                                               |
 |-----------|---------------------------------------------------------------------------------------------------|
@@ -33,6 +33,7 @@ Ids are `UNib32` on the wire, so small numbers are shorter: `0..=7` take one nib
 | 8-63      | the device contract and common IO: firmware and board info, identity, counters, firmware update, clock, indication, GPIO, UART, I2C, SPI, CAN, ADC, PWM |
 | 64-511    | all other reusable traits                                                                         |
 | 512+      | link and protocol crates                                                                          |
+| 2^30      | `ww_log::LogText`: the first id of 11 nibbles. A text log spends far more on each record than on the id |
 
 Each family takes a block with gaps left for related traits to come.
 
@@ -48,7 +49,6 @@ Each family takes a block with gaps left for related traits to come.
 |  11 | trait | `ww_uid::Uid` |
 |  12 | trait | `ww_user_info::UserInfo` |
 |  13 | trait | `ww_counters::Counters` |
-|  14 | trait | `ww_log::LogText` |
 |  16 | trait | `ww_dfu::BootControl` |
 |  17 | trait | `ww_dfu::UpdateNode` |
 |  18 | trait | `ww_dfu::Inventory` |
@@ -89,6 +89,7 @@ Each family takes a block with gaps left for related traits to come.
 | 136 | trait | `ww_pin_diag::PinDiag` |
 | 512 | crate | `wire_weaver_usb_link` |
 | 513 | crate | `ww_client_server` |
+| 1073741824 | trait | `ww_log::LogText` |
 
 ## File format
 

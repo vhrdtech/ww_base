@@ -11,6 +11,10 @@ Each crate keeps its own detailed changelog (`<crate>/CHANGELOG.md`); this file 
 - Repository: ww_crc, ww_date_time, ww_error, ww_global, ww_keyed, ww_numeric, ww_si and ww_version live in vhrdtech/ww_base; take them by git from there.
 - shrink_wrap and exact_units come by git from romixlab/shrink_wrap and romixlab/exact_units.
 
+### 🚀 Features
+
+- ww_global: `ww_log::LogText` takes id 2^30 instead of a short one (API-20).
+
 ### 🐛 Fixes
 
 - ww_error: the crate doc example builds again (STD-16).
