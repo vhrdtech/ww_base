@@ -15,7 +15,8 @@ fn main() {
     let mut out = String::new();
     let mut entries = String::new();
     for entry in json["ids"].as_array().expect("`ids` list") {
-        let id = entry["id"].as_u64().expect("`id` number") as u32;
+        let id = entry["id"].as_u64().expect("`id` number");
+        let id = u32::try_from(id).unwrap_or_else(|_| panic!("id {id} does not fit `u32`"));
         let (kind, name) = match (entry["crate"].as_str(), entry["trait"].as_str()) {
             (Some(name), None) => ("Crate", name),
             (None, Some(name)) => ("Trait", name),

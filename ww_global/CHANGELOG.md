@@ -20,6 +20,10 @@
 * `assigned_ids.lock`, the append-only record of every id ever assigned, checked by a test (`just gid-lock` appends).
 * Wire version `w1.0` of its own (EVO-26), in `Cargo.toml` as `[package.metadata.wire_weaver] wire = "w1.0"`: `#[since]` in this crate names its revisions, and a Rust-only break of the crate no longer touches the wire line of the APIs using it. The snapshot carries it (`wire`, `ext_wire`), so its hash changed.
 
+### 🐛 Fixes
+
+* The build refuses a ledger id above `u32::MAX` instead of wrapping it onto a smaller id (API-20).
+
 ### ⚙️ Miscellaneous Tasks
 
 * `build.rs` writes into `OUT_DIR` instead of overwriting `src/lib.rs` on every build.
