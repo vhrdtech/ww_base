@@ -186,7 +186,7 @@ On a small MCU the conversions, comparisons and bounds run on `exact_units`' int
 magnitude): with types up to 32 bits no `f32`, `f64` or 128-bit code is linked, and none for floats at all unless the
 API turns on `f32` (`f64` is for hosts). The same prefix takes a shortcut on the stored numbers. The no-float guard
 (`just no-float-guard`, part of `just test`) builds a firmware calling each of these operations for Cortex-M0 and
-M4F and fails on any such symbol. Against the `i128` / `f64` paths this replaced, Donguru (Cortex-M0+, opt-level
+M4F and fails on any such symbol. Against the `i128` / `f64` paths this replaced, Portwright (Cortex-M0+, opt-level
 `z`) is 14.6 KB smaller and rePort (Cortex-M33) 9.7 KB; a `FullScale` or binary-prefix conversion takes about a
 tenth of the instructions it did, one between two SI prefixes about as many (`qemu-si-convert`).
 
