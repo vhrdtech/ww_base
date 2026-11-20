@@ -467,7 +467,7 @@ dependencies = [
 [[package]]
 name = "shrink_wrap"
 version = "0.2.0"
-source = "git+https://github.com/romixlab/shrink_wrap#cd4c1e4d4f14546206e0f480e35e041d56fb6f38"
+source = "git+https://github.com/romixlab/shrink_wrap#12c2742b54d3ccb8a73cda4a95bc795326c4c60f"
 dependencies = [
  "defmt",
  "either",
@@ -479,7 +479,7 @@ dependencies = [
 [[package]]
 name = "shrink_wrap_derive"
 version = "0.2.0"
-source = "git+https://github.com/romixlab/shrink_wrap#cd4c1e4d4f14546206e0f480e35e041d56fb6f38"
+source = "git+https://github.com/romixlab/shrink_wrap#12c2742b54d3ccb8a73cda4a95bc795326c4c60f"
 dependencies = [
  "proc-macro-crate",
  "proc-macro2",
