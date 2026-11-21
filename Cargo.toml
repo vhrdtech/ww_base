@@ -47,6 +47,7 @@ unused_lifetimes = "warn"
 dbg_macro = "warn"
 
 [profile.dev]
+debug = false
 split-debuginfo = "unpacked"
 
 [profile.dev.package."*"]
