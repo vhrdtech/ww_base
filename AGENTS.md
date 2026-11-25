@@ -60,12 +60,20 @@ just lint             # fmt, cargo sort -w -g, typos, clippy and rustdoc -D warn
 just api-check        # `ww api check` of every API crate (ww from PATH, or WW=path); skipped with a note without ww
 just check            # ww_si feature sets, every crate without std on Cortex-M0
 just save-snapshots   # `ww api save` of every API crate; `--force` only for a version never published
+just book-outputs     # write docs/generated/ again: the outputs the pages show, from tests named `book_output*`
 just gid-lock         # append ids newly assigned in wire_weaver_gid.json to assigned_ids.lock
 ```
 
 Single test: `cargo nextest run -p ww_si <test>` (nextest is required). Tests run with default features (`defmt`
 breaks host linking). Plain `cargo sort` flattens grouped tables: always pass `-w -g`. Project words go into
 `typos.toml`. CI (`.github/workflows/ci.yml`) fails on any warning; it has no `ww`, so it skips `just api-check`.
+
+## Docs pages
+
+Each page has a `level:` in its front matter and holds one level. A Basic page shows Rust only as an include of a
+marked section of a compiled source (`--8<-- "ww_si/tests/book_units.rs:NAME"`), and shows output only from a golden
+file in `docs/generated/`, which a test named `book_output*` writes through the `book_outputs` crate. Figures are
+SVG files in `docs/assets/`, included the same way. Name a file in prose with a file link, `` [`book_units.rs:NAME`] ``.
 
 ## Numbers are typed
 

@@ -245,6 +245,7 @@
   (feature `f32`). `Volt * AngularVelocity` and `Volt + Ampere` don't compile.
 * Compound units `units::Per<A, B>` and `units::Times<A, B>`, shown as `N·m/(rad/s)`.
 * `units::by_name("Volt")` and `units::ALL`: the `UnitExpr` of every named unit, for dynamic clients.
+- Docs: `ww_si.md` splits by level into Basic pages (numbers with units, bounds, quantities, points, timestamps, timed values) and Advanced ones; the Basic pages include code from `tests/book_units.rs` and `tests/book_time.rs` (DOC-19).
 
 ## 0.1.0
 

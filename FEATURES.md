@@ -34,6 +34,7 @@ planned, for humans and AI agents alike.
 
 ## Base types and quantities (`ww_si`, `ww_numeric`, `ww_version`, `ww_date_time`, `ww_error`, `STD`)
 
+- ✅ **DOC-19 base-pages-by-level** — the pages of `ww_si`, `exact_units`, `points` and `ww_error` split by level: nine Basic pages with the thermometer's types, code included from `ww_si/tests/book_units.rs`, `book_time.rs` and `ww_error/tests/book_errors.rs`, outputs from `docs/generated/` (`just book-outputs`) and a figure each; sixteen Advanced pages hold the rest. `docs/ww_si.md`, `docs/exact_units.md`, `docs/bounds.md`, `docs/quantity.md`, `docs/points.md`, `docs/timestamps.md`, `docs/timed.md`, `docs/ww_error.md`.
 - ✅ **STD-2 `ww_version`**.
 - ✅ **STD-3 `ww_si`** and **`ww_numeric`**.
 - ✅ **STD-4 `ww_date_time`**.

@@ -63,6 +63,11 @@ api-check:
     fi
     for c in {{ api_crates }}; do {{ ww }} api check $c; done
 
+# Write the docs' golden outputs (docs/generated/) again: every test named `book_output*`; a stale file fails `just test`
+book-outputs:
+    rm -rf docs/generated
+    WW_BOOK_OUTPUTS=write cargo nextest run --workspace -E 'test(/book_output/)'
+
 # Append ids newly assigned in ww_global/wire_weaver_gid.json to its append-only lock (API-20)
 gid-lock:
     GID_LOCK=update cargo nextest run -p ww_global assigned_ids
