@@ -4,18 +4,38 @@ level: basic
 
 # Readings with their time
 
-`Timed<V, Tm = DeviceMicros<u32>> { t: Tm, value: V }` is a value with the time it was taken: a sample of a
-property, an item of a stream (`Timed<Ampere>`). `t` is a [point](points.md) on a time scale, by default
-`DeviceMicros<u32>`: µs since the device booted (origin `DeviceBoot`) in a `u32` that wraps every 71.6 minutes. It is
-a `final_structure` struct of `t` and then `value`, the same bytes a `#[derive_shrink_wrap(final_structure)]` struct
-of those two fields has, so no fields can be added to it later. `t` is the bytes of its storage alone, no prefix and
-no number tag. In an API it is used with its arguments, `property!(ro current: Timed<Ampere>)`; its definition is in
-the `ww_si` snapshot, so devices leave it out of their introspection data (see
-[generic types in an API](../types.md#generic-types-in-an-api)).
+A sensor reading is only half a fact without the moment it was taken. `Timed<V, Tm>` holds both: the value `V` and its time `t` of type `Tm`. A property can hold one, and a stream item usually is one. A power supply's current, for instance, is a `Timed<Ampere>`.
+
+`t` is a [point](points.md) on a time scale. Its default type is `DeviceMicros<u32>`: microseconds since the device booted, kept in a `u32` that wraps every 71.6 minutes, as [Timestamps](timestamps.md) explains. The origin of the scale is `DeviceBoot`, the moment of the boot.
+
+## Making a reading
+
+[`book_time.rs:timed`] makes a reading of 25.5 °C taken one second after the boot, and checks its bytes:
 
 ```rust
-use ww_si::{Ampere, Timed, origins::DeviceMicros};
-
-let sample = Timed::new(DeviceMicros::from_raw(1_000_000u32), Ampere::milli(-1200i32));
-assert_eq!(sample.t.raw(), 1_000_000);
+--8<-- "ww_si/tests/book_time.rs:timed"
 ```
+
+The reading is six bytes: four for the time and two for the temperature. The time carries no prefix and no number type, only the bytes of its storage, and the value follows it. In an API the type is written with its arguments, as `Timed<Ampere>` for a current.
+
+[`book_time.rs:timed_show`] shows the parts of the same reading:
+
+```rust
+--8<-- "ww_si/tests/book_time.rs:timed_show"
+```
+
+```text
+--8<-- "docs/generated/ww_si/timed.txt"
+```
+
+The origin decides the text of the time: `1 s since boot`. `Debug` adds the unit and the number type, `1000000 µs u32`, which is how the device stores it.
+
+## What you can rely on
+
+`Timed` is laid out as a struct of `t` and then `value`, with no room for more fields. It has the same bytes as a struct of those two fields declared with `final_structure`, so the layout can never change. Because `ww_si` defines `Timed`, a device leaves its definition out of its introspection data. [Generic types in an API](../types.md#generic-types-in-an-api) explains why.
+
+In a `Series`, `t` is a column like any other. 32 `Timed<Volt>` samples at a 40 µs clock take 21 bytes together. [Series](../serdes/series.md) shows how.
+
+## Where to go next
+
+[Time points and the full time on the host](time_points.md) picks another time type, when 71.6 minutes between two items is not enough or a millisecond clock is enough, and shows the host side of a timed stream.

@@ -4,35 +4,48 @@ level: basic
 
 # Quantities with a prefix
 
-## Constructors
+A [`Quantity`] is a number with a unit in its type and a prefix in each value. The prefix says what 1 stands for: `Volt::milli(3300u16)` is 3300 millivolts, and `Volt::base(3.3f32)` is 3.3 volts. The API says only that a value is a voltage. Each device picks the prefix and the number type that suit its hardware, and every host reads them all as the same quantity.
 
-| Constructor                                   | Value                                                        |
-|-----------------------------------------------|--------------------------------------------------------------|
-| `new(prefix, value)`                          | any enabled number type: `u16`, `f32`, `UVlq32`, ..          |
-| `base`, `milli`, `micro`, `nano`, `pico`      | `Volt::base(3u8)` is 3 V, `Second::micro(100u32)` 100 µs      |
-| `centi`, `kilo`, `mega`, `giga`               | `Hertz::kilo(400u32)` is 400 kHz, `Gram::kilo(5u8)` 5 kg      |
-| `from_f32(x)`                                 | `f32` in the unit itself, `const`                            |
-| `from_parts(prefix, value)`                   | `const`, for statics and tables                              |
-| `quantize(x, prefix, storage)`                | an `f32` put into the representation an API documents        |
-| `Ratio::percent`, `per_mille`, `ppm`          | `Centi`, `Milli`, `Micro`                                    |
+Use a `Quantity` when the devices that serve one API differ in resolution. An ADC board may report millivolts in a `u16`, and a precision board microvolts in an `i32`. The thermometer does not need this, because its API fixes everything, so this page uses a voltage for its examples. [Numbers with units](ww_si.md) compares the two types.
 
-Mass is in grams, so a prefix works on it like on any other unit: 5 kg is `Gram::kilo(5u8)`.
+## Making and showing a quantity
 
-`quantize` is what a device does with a value it computed as a float: `Ampere::quantize(0.1523, Prefix::Milli,
-NumericBaseType::I32)` is 152 mA, rounded to the nearest integer and saturated at the storage's range (a float storage
-takes the value as is). It computes in `f32`, no `f64` code on a device.
+A constructor named after a prefix makes a quantity: `milli`, `micro`, `nano`, `pico`, `centi`, `kilo`, `mega` and `giga`. `base` makes one with no prefix, and `new` takes a prefix as an argument. The number can be any number type the firmware enabled, such as `u16`, `i32` or `f32`.
 
-## On the wire and in introspection
+`Display` writes the number as stored, with its prefix. The alternate form `{:#}` writes the value in the unit itself, and `Debug` adds the unit's name and the number type. [`book_units.rs:quantity`] shows them with the conversions of the next section:
 
-A quantity is a `final_structure` struct of its prefix and its value; the unit takes no bits. The bytes are the same
-as in ww_si 0.1, where each quantity was a struct of its own, so recorded data and `Series` blobs still decode:
+```rust
+--8<-- "ww_si/tests/book_units.rs:quantity"
+```
 
-| Value                        | Bytes                |
-|------------------------------|----------------------|
-| `Volt::milli(3300u16)`       | `12 e4 0c`           |
-| `Ampere::micro(-152000i32)`  | `26 40 ae fd ff`     |
-| `Volt::from_f32(3.3)`        | `07 33 33 53 40`     |
+```text
+--8<-- "docs/generated/ww_si/quantity.txt"
+```
 
-In the API model a use of `Volt` is an instance of the generic `Quantity` with the marker `units::Volt` as its
-argument (an alias is not a definition of its own). Both are in the `ww_si` snapshot, so a device sends a reference
-to them, not their definitions.
+## Comparing and converting
+
+A quantity compares by what it means, not by how it is stored. 1500 mV in a `u16` equals 1.5 V in an `f32`, and the first assertion in the section above checks it. Two integers compare exactly, even when their prefixes are far apart.
+
+Conversions say what may go wrong. `to_f64` gives the value in the unit itself. `rescaled_exact` changes the prefix only when the result is exact: 3000 mV is exactly 3 V, and 3300 mV is not a whole number of volts, so it gives `None`. `to_in` returns the value in a chosen prefix and number type, and its arguments name what happens to a fraction and to a value that does not fit. [Converting and comparing quantities](conversions.md) lists them all.
+
+## The bytes on the wire
+
+A quantity is its prefix, then its number. The prefix and the number type share the first byte, one nibble each, and the unit takes no bits at all. [`book_units.rs:quantity_bytes`] checks the three bytes of 3300 mV:
+
+```rust
+--8<-- "ww_si/tests/book_units.rs:quantity_bytes"
+```
+
+--8<-- "docs/assets/quantity_bytes.svg"
+
+*The first byte of 3300 mV holds the prefix and the number type; the next two bytes are the `u16` 3300.*
+
+A `Fixed` of the same value is one byte shorter, which is the price of a device choosing its own scale.
+
+## Where to go next
+
+- [Bounds](bounds.md) limits a quantity to a range, as it limits a `Fixed`.
+- [Converting and comparing quantities](conversions.md) covers rounding, overflow and the integer arithmetic of a small CPU.
+- [Constructors and bytes of a Quantity](quantity_reference.md) lists every constructor and more byte layouts.
+- [Prefixes](prefixes.md) lists every prefix, including the binary and the unnamed ones.
+- [Unit algebra](unit_algebra.md) multiplies quantities, and the compiler checks the units of the result.

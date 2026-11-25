@@ -2,17 +2,19 @@
 level: basic
 ---
 
-# ww_error
+# Common errors
 
-Errors every API can return (STD-16): `Unsupported`, `InUse`, `Busy`, ... look the same in every crate, generic host
-code handles them without knowing the crate, and tools show them without knowing the crate either. A common error is
-not part of any API's error enum: a handler returns it beside the API's own error, the protocol carries it as an
-error event, and the client gets it as `CallError::Common` (see [Errors](../api/errors.md#common-errors)).
+Some failures can happen on any device: a feature the device does not have, a resource that another function holds, a supply that is off, a call that took too long. WireWeaver gives these failures one shared list, `CommonError`, so they look the same in every API. Generic host code handles them without knowing your crate, and tools show them without knowing it either.
 
-`ww_api` re-exports the crate: `ww_api::prelude` (and `wire_weaver::prelude`, which includes it) has `CommonError`
-and `CommonErrorOwned` (with `std`), so an API crate needs no dependency of its own.
+A common error is not part of your API's own error enum. A handler returns it beside the API's own error, and the protocol carries it separately. This page shows the shared list and its messages. [Common errors in an API](ww_error_in_an_api.md) shows how a handler returns them and how a host handles them.
 
-## `CommonError`
+--8<-- "docs/assets/error_paths.svg"
+
+*A handler can return the API's own error or a common error. They travel differently, and `common()` on the host's call error gives the common one.*
+
+## The list
+
+`CommonError` has nine variants that a handler can return without writing an error type of its own. An API crate needs no dependency for them: `ww_api::prelude`, and `wire_weaver::prelude` that includes it, export `CommonError` and, with `std`, `CommonErrorOwned`.
 
 | Variant | Message (its doc line) | When |
 |---|---|---|
@@ -26,14 +28,50 @@ and `CommonErrorOwned` (with `std`), so an API crate needs no dependency of its 
 | `Timeout` | Timed out. | |
 | `Fault { code: u32 }` | Hardware fault {code:#x}. | Device-specific code. |
 
-Strings are bounded (`reason` 64 bytes, `by` 32, `rail` 16) and may be empty: a device that saves flash sends `""`,
-and the message leaves the part out (`Refused`). `CommonError` is an `Unsized` enum, so it ends in `Unknown(u32)`
-(SW-47): a variant added in a newer `ww_error` reaches an older host as `Unknown(n)`, not as a decode error.
+The strings are bounded: `reason` holds at most 64 bytes, `by` 32 and `rail` 16. They may also be empty. A device that wants to save flash sends an empty string, and the message leaves that part out.
 
-`Unsupported` is not the framework's `Unimplemented`: that one means the device has no implementation at all (a
-handler returning `Unimplemented`, an item left out), and stays a framework error.
+`Unsupported` is not the framework's `Unimplemented`. `Unimplemented` means that the device has no implementation at all, for example a handler that returns it or an item left out, and it stays a framework error.
 
-`Display` and `core::error::Error` are implemented for both types, the message is the variant's doc line with its
-fields filled in, without the final period: `In use by USART2`. `CommonError::DOCS` holds the names and doc lines
-in discriminant order, and `name()` gives a value's variant name: tools print a common error from it without the
-crate's definition.
+## Messages
+
+Every variant has a message, which is its doc line with the fields filled in and without the final period. `Display` and `core::error::Error` are implemented for `CommonError` and for its owned twin `CommonErrorOwned`. `name()` gives the variant's name, and `CommonError::DOCS` lists the names and doc lines in the order of the variants. A tool prints a common error from these, without the crate's definition. [`book_errors.rs:messages`] prints each variant's name and message:
+
+```rust
+--8<-- "ww_error/tests/book_errors.rs:messages"
+```
+
+```text
+--8<-- "docs/generated/ww_error/messages.txt"
+```
+
+An empty string leaves its part out of the message. [`book_errors.rs:empty`] shows `Refused` with no reason:
+
+```rust
+--8<-- "ww_error/tests/book_errors.rs:empty"
+```
+
+```text
+--8<-- "docs/generated/ww_error/empty.txt"
+```
+
+## On the wire
+
+A common error is its variant's number, then its fields. [`book_errors.rs:wire`] checks the bytes of `InUse` and of `Busy`:
+
+```rust
+--8<-- "ww_error/tests/book_errors.rs:wire"
+```
+
+`InUse` is the variant number 2, the string `USART2`, and the string's length at the back, as everywhere in the wire format. `Busy` has no fields, so it is one byte.
+
+The list may grow. `CommonError` ends in the variant `Unknown(u32)`. A variant that a later `ww_error` adds reaches an older host as `Unknown(n)`, not as a decode error. [`book_errors.rs:unknown`] reads the bytes of a variant number 12:
+
+```rust
+--8<-- "ww_error/tests/book_errors.rs:unknown"
+```
+
+## Where to go next
+
+- [Common errors in an API](ww_error_in_an_api.md) returns them from a handler and handles them on the host.
+- [Errors](../api/errors.md) covers your API's own error enum.
+- [Listing the errors a method returns](errors_lists.md) declares which errors a method can return, so that tools can show them.

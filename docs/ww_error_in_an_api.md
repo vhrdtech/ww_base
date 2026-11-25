@@ -4,6 +4,10 @@ level: basic
 
 # Common errors in an API
 
+A handler returns a common error beside its API's own error, and the generated client gives both back to the host. This page shows the declaration, the handler on the device and the call on the host. The list of common errors is on [Common errors](ww_error.md).
+
+## Declaring the API's own errors
+
 An API's error enum holds only what a tool or a caller should act on specifically (`Nack`, `UnsupportedSpeed` with
 the range). The common errors need no variant, and an item that can only fail with a common error needs no `Result`:
 
