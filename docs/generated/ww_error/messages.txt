@@ -1,0 +1,9 @@
+Unsupported     Not supported by this device
+InvalidArgument Argument number 1 is invalid: out of range
+InUse           In use by USART2
+Busy            Busy with another operation, try again later
+WrongState      Not possible in the current state: the output is on
+NoPower         No power on VIO
+Refused         Refused: locked
+Timeout         Timed out
+Fault           Hardware fault 0x2a

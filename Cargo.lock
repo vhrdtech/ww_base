@@ -40,6 +40,10 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "3ded4057c258ba199e2d26386d3af3780957ecaee6c4ef4041c6b4b8b97c0b06"
 
 [[package]]
+name = "book_outputs"
+version = "0.1.0"
+
+[[package]]
 name = "borsh"
 version = "1.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -634,6 +638,7 @@ dependencies = [
 name = "ww_error"
 version = "0.1.0"
 dependencies = [
+ "book_outputs",
  "defmt",
  "shrink_wrap",
  "ww_si",
@@ -670,6 +675,7 @@ dependencies = [
 name = "ww_si"
 version = "0.5.0"
 dependencies = [
+ "book_outputs",
  "defmt",
  "exact_units",
  "proptest",

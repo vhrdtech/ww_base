@@ -22,5 +22,8 @@ defmt = { workspace = true, optional = true }
 shrink_wrap.workspace = true
 ww_si = { workspace = true, default-features = false, features = ["counting"] }
 
+[dev-dependencies]
+book_outputs.workspace = true
+
 [lints]
 workspace = true

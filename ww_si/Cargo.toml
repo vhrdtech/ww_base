@@ -130,6 +130,7 @@ shrink_wrap.workspace = true
 ww_numeric.workspace = true
 
 [dev-dependencies]
+book_outputs.workspace = true
 proptest.workspace = true
 
 [lints]

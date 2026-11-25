@@ -1,0 +1,5 @@
+4
+Ok(Ratio(8 u8, 1..=16))
+Err(OutOfRange(20, 1..=16))
+Ok(Ratio(8 u8, 1..=16))
+Err(SubtypeOutOfRange)

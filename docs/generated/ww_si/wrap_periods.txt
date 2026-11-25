@@ -1,0 +1,7 @@
+storage   step      wraps after
+u16       1 µs      65.5 ms
+u16       1 ms      65.5 s
+u32       1 µs      71.6 min
+u32       1 ms      49.7 days
+u64       1 µs      584542 years
+u64       1 ms      584542046 years
