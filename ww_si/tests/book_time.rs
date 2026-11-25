@@ -28,7 +28,7 @@ fn span(seconds: f64) -> String {
 #[test]
 fn book_output_wrap_periods() {
     let mut out = String::new();
-    writeln!(out, "{:<10}{:<10}{}", "storage", "step", "wraps after").unwrap();
+    writeln!(out, "{:<10}{:<10}wraps after", "storage", "step").unwrap();
     for (storage, bits) in [("u16", 16), ("u32", 32), ("u64", 64)] {
         for (step, step_s) in [("1 µs", 1e-6), ("1 ms", 1e-3)] {
             let seconds = 2f64.powi(bits) * step_s;

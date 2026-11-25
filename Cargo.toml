@@ -26,8 +26,8 @@ exact_units = { version = "0.1.0", git = "https://github.com/romixlab/exact_unit
 shrink_wrap = { version = "0.2.0", git = "https://github.com/romixlab/shrink_wrap", default-features = false }
 
 # the crates of this repository, each with its own version
-ww_numeric = { version = "0.3.0", path = "./ww_numeric", default-features = false }
 book_outputs = { path = "./book_outputs" }
+ww_numeric = { version = "0.3.0", path = "./ww_numeric", default-features = false }
 ww_si = { version = "0.5.0", path = "./ww_si", default-features = false }
 ww_version = { version = "0.2.0", path = "./ww_version", default-features = false }
 
