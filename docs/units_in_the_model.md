@@ -84,7 +84,7 @@ Not there yet:
   follow with STD-74.
 - Levels (STD-67) and sentinels (STD-66) append their own variants to `MarkerDef` when their markers exist.
 - `ww` and Python show a `Quantity` of any crate's unit (`1500 rpm`), and a `Fixed` with its unit and scale
-  ([in clients](exact_units.md#in-ww-python-and-dynamic-clients)).
+  ([in clients](units_in_tools.md#fixed-in-clients)).
 
 ## The canonical unit
 
